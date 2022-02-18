@@ -1,0 +1,73 @@
+Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_47dc4/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_47dc4.dir/build.make CMakeFiles/cmTC_47dc4.dir/build
+gmake[1]: вход в каталог «/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp»
+Building CXX object CMakeFiles/cmTC_47dc4.dir/src.cxx.o
+/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android16 --sysroot=/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCMAKE_HAVE_LIBC_PTHREAD  -DEBUG  -O2 -g -DNDEBUG -fPIE -std=c++11 -MD -MT CMakeFiles/cmTC_47dc4.dir/src.cxx.o -MF CMakeFiles/cmTC_47dc4.dir/src.cxx.o.d -o CMakeFiles/cmTC_47dc4.dir/src.cxx.o -c /home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp/src.cxx
+/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp/src.cxx:13:3: error: use of undeclared identifier 'pthread_cancel'
+  pthread_cancel(thread);
+  ^
+1 error generated.
+gmake[1]: *** [CMakeFiles/cmTC_47dc4.dir/build.make:79: CMakeFiles/cmTC_47dc4.dir/src.cxx.o] Ошибка 1
+gmake[1]: выход из каталога «/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp»
+gmake: *** [Makefile:127: cmTC_47dc4/fast] Ошибка 2
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_f50cc/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_f50cc.dir/build.make CMakeFiles/cmTC_f50cc.dir/build
+gmake[1]: вход в каталог «/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp»
+Building CXX object CMakeFiles/cmTC_f50cc.dir/CheckFunctionExists.cxx.o
+/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android16 --sysroot=/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -DEBUG -DCHECK_FUNCTION_EXISTS=pthread_create -O2 -g -DNDEBUG -fPIE -std=c++11 -MD -MT CMakeFiles/cmTC_f50cc.dir/CheckFunctionExists.cxx.o -MF CMakeFiles/cmTC_f50cc.dir/CheckFunctionExists.cxx.o.d -o CMakeFiles/cmTC_f50cc.dir/CheckFunctionExists.cxx.o -c /home/artem/libs/spdlog/build/x86/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_f50cc
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f50cc.dir/link.txt --verbose=1
+/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android16 --sysroot=/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DEBUG -DCHECK_FUNCTION_EXISTS=pthread_create -O2 -g -DNDEBUG -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Qunused-arguments -Wl,--no-undefined  -Wl,--gc-sections  CMakeFiles/cmTC_f50cc.dir/CheckFunctionExists.cxx.o -o cmTC_f50cc  -lpthreads  -static-libstdc++ -latomic -lm 
+ld: error: unable to find library -lpthreads
+clang-12: error: linker command failed with exit code 1 (use -v to see invocation)
+gmake[1]: *** [CMakeFiles/cmTC_f50cc.dir/build.make:100: cmTC_f50cc] Ошибка 1
+gmake[1]: выход из каталога «/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp»
+gmake: *** [Makefile:127: cmTC_f50cc/fast] Ошибка 2
+
+
+
+Determining if the function pthread_create exists in the pthread failed with the following output:
+Change Dir: /home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d0ff6/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_d0ff6.dir/build.make CMakeFiles/cmTC_d0ff6.dir/build
+gmake[1]: вход в каталог «/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp»
+Building CXX object CMakeFiles/cmTC_d0ff6.dir/CheckFunctionExists.cxx.o
+/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android16 --sysroot=/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -DEBUG -DCHECK_FUNCTION_EXISTS=pthread_create -O2 -g -DNDEBUG -fPIE -std=c++11 -MD -MT CMakeFiles/cmTC_d0ff6.dir/CheckFunctionExists.cxx.o -MF CMakeFiles/cmTC_d0ff6.dir/CheckFunctionExists.cxx.o.d -o CMakeFiles/cmTC_d0ff6.dir/CheckFunctionExists.cxx.o -c /home/artem/libs/spdlog/build/x86/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_d0ff6
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d0ff6.dir/link.txt --verbose=1
+/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=i686-none-linux-android16 --sysroot=/home/artem/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DEBUG -DCHECK_FUNCTION_EXISTS=pthread_create -O2 -g -DNDEBUG -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Qunused-arguments -Wl,--no-undefined  -Wl,--gc-sections  CMakeFiles/cmTC_d0ff6.dir/CheckFunctionExists.cxx.o -o cmTC_d0ff6  -lpthread  -static-libstdc++ -latomic -lm 
+ld: error: unable to find library -lpthread
+clang-12: error: linker command failed with exit code 1 (use -v to see invocation)
+gmake[1]: *** [CMakeFiles/cmTC_d0ff6.dir/build.make:100: cmTC_d0ff6] Ошибка 1
+gmake[1]: выход из каталога «/home/artem/libs/spdlog/build/x86/CMakeFiles/CMakeTmp»
+gmake: *** [Makefile:127: cmTC_d0ff6/fast] Ошибка 2
+
+
+
