@@ -1,12 +1,16 @@
 package ru.iu3.fclient;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.commons.codec.DecoderException;
@@ -18,6 +22,7 @@ import java.util.Locale;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
+    ActivityResultLauncher<Intent> activityResultLauncher;
 
     // Used to load the 'RPO2022' library on application startup.
     static {
@@ -50,22 +55,42 @@ public class MainActivity extends AppCompatActivity {
         // Пример дешифрования данных (в отладчике)
         byte[] decrypt_data = decrypt(keys, encrypt_data);
 
-        Button button = binding.sampleButton;
+        activityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent intent = result.getData();
+                            String pin = intent.getStringExtra("pin");
+
+                            Toast.makeText(MainActivity.this, pin, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        );
     }
 
+//    public void onButtonClick(View view) {
+//        //Toast.makeText(this, "Clicked!!!", Toast.LENGTH_SHORT).show();
+//        // Ключ, по которому будем осуществлять шифрование данных
+//        byte[] key = stringToHex("0123456789ABCDEF0123456789ABCDE0");
+//
+//        // Шифрование и дешифрование данных
+//        byte[] encryptedData = encrypt(key, stringToHex("000000000000000102"));
+//        byte[] decryptData = decrypt(key, encryptedData);
+//
+//        // На осноании байтового массива получаем строку как конвертирование HEX-а
+//        String s = new String(Hex.encodeHex(decryptData)).toUpperCase();
+//        // Выводим на экран Toast
+//        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+//    }
+
     public void onButtonClick(View view) {
-        //Toast.makeText(this, "Clicked!!!", Toast.LENGTH_SHORT).show();
-        // Ключ, по которому будем осуществлять шифрование данных
-        byte[] key = stringToHex("0123456789ABCDEF0123456789ABCDE0");
+        Intent intent = new Intent(this, PinpadActivity.class);
 
-        // Шифрование и дешифрование данных
-        byte[] encryptedData = encrypt(key, stringToHex("000000000000000102"));
-        byte[] decryptData = decrypt(key, encryptedData);
-
-        // На осноании байтового массива получаем строку как конвертирование HEX-а
-        String s = new String(Hex.encodeHex(decryptData)).toUpperCase();
-        // Выводим на экран Toast
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+        // Вот здесь произошла замена: вместо startActivity поставил launch
+        activityResultLauncher.launch(intent);
     }
 
     // Метод осуществляет конвертирование из String в HEX
