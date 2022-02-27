@@ -3,7 +3,14 @@ package ru.iu3.fclient;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 
 import ru.iu3.fclient.databinding.ActivityMainBinding;
 
@@ -42,11 +49,25 @@ public class MainActivity extends AppCompatActivity {
         // Пример дешифрования данных (в отладчике)
         byte[] decrypt_data = decrypt(keys, encrypt_data);
 
-        // Example of a call to a native method
-        TextView tv = binding.sampleText;
-        tv.setText(stringFromJNI());
+        Button button = binding.sampleButton;
     }
 
+    public void onButtonClick(View view) {
+        // Выводим Toast на экран
+        Toast.makeText(this, "Clicked!!!", Toast.LENGTH_SHORT).show();
+    }
+
+    public static byte[] stringToHex(String s) {
+        byte[] hex;
+        try {
+            hex = Hex.decodeHex(s.toCharArray());
+        } catch (DecoderException decoderException) {
+            Log.println(Log.ERROR, "MtLog", decoderException.getMessage());
+            hex = null;
+        }
+
+        return hex;
+    }
     /**
      * A native method that is implemented by the 'fclient' native library,
      * which is packaged with this application.
@@ -55,5 +76,6 @@ public class MainActivity extends AppCompatActivity {
     public static native int initRng();
     public static native byte[] randomBytes(int no);
     public static native byte[] encrypt(byte[] key, byte[] data);
+
     public static native byte[] decrypt(byte[] key, byte[] data);
 }
