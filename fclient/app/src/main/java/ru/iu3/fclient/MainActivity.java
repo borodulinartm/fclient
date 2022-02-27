@@ -14,6 +14,7 @@ import org.apache.commons.codec.binary.Hex;
 
 import ru.iu3.fclient.databinding.ActivityMainBinding;
 
+import java.util.Locale;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,15 +54,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onButtonClick(View view) {
-        // Выводим Toast на экран
-        Toast.makeText(this, "Clicked!!!", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Clicked!!!", Toast.LENGTH_SHORT).show();
+        // Ключ, по которому будем осуществлять шифрование данных
+        byte[] key = stringToHex("0123456789ABCDEF0123456789ABCDE0");
+
+        // Шифрование и дешифрование данных
+        byte[] encryptedData = encrypt(key, stringToHex("000000000000000102"));
+        byte[] decryptData = decrypt(key, encryptedData);
+
+        // На осноании байтового массива получаем строку как конвертирование HEX-а
+        String s = new String(Hex.encodeHex(decryptData)).toUpperCase();
+        // Выводим на экран Toast
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
     }
 
+    // Метод осуществляет конвертирование из String в HEX
     public static byte[] stringToHex(String s) {
         byte[] hex;
         try {
             hex = Hex.decodeHex(s.toCharArray());
         } catch (DecoderException decoderException) {
+            // При возникновении ошибок выводим в LogCat сообщение об ошибке
             Log.println(Log.ERROR, "MtLog", decoderException.getMessage());
             hex = null;
         }
