@@ -10,6 +10,8 @@ import android.widget.TextView;
 import android.os.Bundle;
 import android.view.View;
 
+import java.text.DecimalFormat;
+
 public class PinpadActivity extends AppCompatActivity {
     TextView textViewPin;
     String pin = "";
@@ -37,6 +39,25 @@ public class PinpadActivity extends AppCompatActivity {
            pin = "";
            textViewPin.setText(pin);
         });
+
+        // Обработка txtAmount
+        TextView ta = findViewById(R.id.txtAmount);
+
+        String amt = String.valueOf(getIntent().getStringExtra("amount"));
+        Long f = Long.valueOf(amt);
+        DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+        String s = df.format(f);
+
+        ta.setText("Summ: " + s);
+
+        // Обработка txtPtc
+        TextView tp = findViewById(R.id.txtPtc);
+        int pts = getIntent().getIntExtra("ptc", 0);
+        if (pts == 2) {
+            tp.setText("2 popitki ostalos");
+        } else if (pts == 1) {
+            tp.setText("1 popitka ostalas");
+        }
     }
 
     // Обработчик события нажатия кнопки

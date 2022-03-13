@@ -25,6 +25,34 @@ auto android_logger = spdlog::android_logger_mt("android", "fclient_ndk");
 mbedtls_entropy_context entropy;
 mbedtls_ctr_drbg_context ctr_drbg;
 char *personalization = "fclient-sample-app";
+JavaVM *gJvm = nullptr;
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pJvm, void *reserved) {
+    gJvm = pJvm;
+    return JNI_VERSION_1_6;
+}
+
+JNIEnv *getEnv(bool &detach) {
+    JNIEnv *env = nullptr;
+    int status = gJvm->GetEnv((void **)&env, JNI_VERSION_1_6);
+    detach = false;
+    if (status == JNI_EDETACHED) {
+        status = gJvm->AttachCurrentThread(&env, nullptr);
+        if (status < 0) {
+            return nullptr;
+        }
+
+        detach = true;
+    }
+
+    return env;
+}
+
+void releaseEnv(bool detach, JNIEnv* env) {
+    if (detach && (gJvm != nullptr)) {
+        gJvm->DetachCurrentThread();
+    }
+}
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_ru_iu3_fclient_MainActivity_stringFromJNI(JNIEnv *env, jobject /* this */) {
@@ -150,4 +178,64 @@ Java_ru_iu3_fclient_MainActivity_decrypt(JNIEnv *env, jclass clazz, jbyteArray k
     env->ReleaseByteArrayElements(data, pdata, 0);
 
     return dout;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_ru_iu3_fclient_MainActivity_transaction(JNIEnv *xenv, jobject xthiz, jbyteArray xtrd) {
+    jobject thiz = xenv->NewGlobalRef(xthiz);
+    jbyteArray trd = (jbyteArray)xenv->NewGlobalRef(xtrd);
+
+    std::thread t([thiz, trd] {
+        bool detach = false;
+        JNIEnv *env = getEnv(detach);
+        jclass cls = env->GetObjectClass(thiz);
+        jmethodID id = env->GetMethodID(cls, "enterPin", "(ILjava/lang/String;)Ljava/lang/String;");
+
+        uint8_t *p = (uint8_t*)env->GetByteArrayElements(trd, 0);
+        jsize sz = env->GetArrayLength(trd);
+
+        if ((sz != 9) || (p[0] != 0x9F) || (p[1] != 0x02) || (p[2] != 0x06)) {
+            return false;
+        }
+
+        char buffer[13];
+        for (int i = 0; i < 6; ++i) {
+            uint8_t n = *(p + 3 + i);
+            buffer[i * 2] = ((n & 0xF0) >> 4) + '0';
+            buffer[i * 2 + 1] = (n & 0x0F) + '0';
+        }
+
+        buffer[12] = 0x00;
+        jstring amount = (jstring) env->NewStringUTF(buffer);
+        int ptc = 3;
+        while (ptc > 0) {
+            jstring pin = (jstring) env->CallObjectMethod(thiz, id, ptc, amount);
+            const char *utf = env->GetStringUTFChars(pin, nullptr);
+
+            env->ReleaseStringUTFChars(pin, utf);
+            if ((utf != nullptr) && (strcmp(utf, "1234") == 0)) {
+                break;
+            }
+
+            ptc--;
+        }
+
+        env->ReleaseByteArrayElements(trd, (jbyte *)p, 0);
+
+        id = env->GetMethodID(cls, "transactionResult", "(Z)V");
+        env->CallVoidMethod(thiz, id, ptc > 0);
+
+        // Вот эта строчка являлась причиной всех бед
+//        env->ReleaseByteArrayElements(trd, (jbyte *)p, 0);
+
+        env->DeleteGlobalRef(thiz);
+        env->DeleteGlobalRef(trd);
+
+        releaseEnv(detach, env);
+        return true;
+    });
+
+    t.detach();
+    return true;
 }

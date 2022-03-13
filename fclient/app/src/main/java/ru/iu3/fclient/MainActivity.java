@@ -18,11 +18,14 @@ import org.apache.commons.codec.binary.Hex;
 
 import ru.iu3.fclient.databinding.ActivityMainBinding;
 
-import java.util.Locale;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TransactionEvents {
     ActivityResultLauncher<Intent> activityResultLauncher;
+
+    private String pin;
 
     // Used to load the 'RPO2022' library on application startup.
     static {
@@ -62,9 +65,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             Intent intent = result.getData();
-                            String pin = intent.getStringExtra("pin");
-
-                            Toast.makeText(MainActivity.this, pin, Toast.LENGTH_SHORT).show();
+                            pin = intent.getStringExtra("pin");
+                            synchronized (MainActivity.this) {
+                                MainActivity.this.notifyAll();
+                            }
                         }
                     }
                 }
@@ -87,10 +91,15 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     public void onButtonClick(View view) {
-        Intent intent = new Intent(this, PinpadActivity.class);
-
-        // Вот здесь произошла замена: вместо startActivity поставил launch
-        activityResultLauncher.launch(intent);
+        // Добавляем к 3 ЛР метод транзакции данных
+        new Thread(() -> {
+           try {
+               byte[] trd = stringToHex("9F0206000000000100");
+               transaction(trd);
+           } catch (Exception exception) {
+               Log.println(Log.ERROR, "MtLog", Arrays.toString(exception.getStackTrace()));
+           }
+        }).start();
     }
 
     // Метод осуществляет конвертирование из String в HEX
@@ -114,6 +123,34 @@ public class MainActivity extends AppCompatActivity {
     public static native int initRng();
     public static native byte[] randomBytes(int no);
     public static native byte[] encrypt(byte[] key, byte[] data);
-
     public static native byte[] decrypt(byte[] key, byte[] data);
+    public native boolean transaction(byte[] trd);
+
+    // Переопределяем метод, который написан в интерфейсе
+    @Override
+    public String enterPin(int ptc, String amount) {
+        pin = new String();
+
+        Intent intent = new Intent(MainActivity.this, PinpadActivity.class);
+        intent.putExtra("ptc", ptc);
+        intent.putExtra("amount", amount);
+
+        synchronized (MainActivity.this) {
+            activityResultLauncher.launch(intent);
+            try {
+                MainActivity.this.wait();
+            } catch (Exception exception) {
+                Log.println(Log.ERROR, "MtLog", exception.getMessage());
+            }
+        }
+
+        return pin;
+    }
+
+    @Override
+    public void transactionResult(boolean result) {
+        runOnUiThread(() -> {
+            Toast.makeText(MainActivity.this, result ? "ok" : "failed", Toast.LENGTH_SHORT).show();
+        });
+    }
 }
