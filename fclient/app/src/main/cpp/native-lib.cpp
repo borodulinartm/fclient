@@ -221,13 +221,10 @@ Java_ru_iu3_fclient_MainActivity_transaction(JNIEnv *xenv, jobject xthiz, jbyteA
             ptc--;
         }
 
-        env->ReleaseByteArrayElements(trd, (jbyte *)p, 0);
-
         id = env->GetMethodID(cls, "transactionResult", "(Z)V");
         env->CallVoidMethod(thiz, id, ptc > 0);
 
-        // Вот эта строчка являлась причиной всех бед
-//        env->ReleaseByteArrayElements(trd, (jbyte *)p, 0);
+        env->ReleaseByteArrayElements(trd, (jbyte *)p, 0);
 
         env->DeleteGlobalRef(thiz);
         env->DeleteGlobalRef(trd);
