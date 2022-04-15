@@ -7,22 +7,44 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.iu3.backend.models.Museum;
+import ru.iu3.backend.models.Painting;
 import ru.iu3.backend.repositories.MuseumRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+/**
+ * Класс - контроллер музея
+ * @author artem
+ */
 @RestController
 @RequestMapping("api/v1")
 public class MuseumController {
+    // Репозиторий нашего музея
     @Autowired
     MuseumRepository museumRepository;
 
+    /**
+     * Метод, который выдаёт список музеев
+     * @return - список музеев, представленный в формате JSON
+     */
     @GetMapping("/museums")
     public List getAllCountries() {
         return museumRepository.findAll();
+    }
+
+    /**
+     * Метод, который осуществляет предоставление доступа к картине из вывода музея
+     * @param museumID - ID картины
+     * @return - блок картин, если таковы есть
+     */
+    @GetMapping("/museums/{id}/paintings")
+    public ResponseEntity<List<Painting>> getPaintingMuseums(@PathVariable(value = "id") Long museumID) {
+        Optional<Museum> cc = museumRepository.findById(museumID);
+        if (cc.isPresent()) {
+            return ResponseEntity.ok(cc.get().paintings);
+        }
+
+        return ResponseEntity.ok(new ArrayList<Painting>());
     }
 
     /**
@@ -68,6 +90,7 @@ public class MuseumController {
         if (cc.isPresent()) {
             museum = cc.get();
 
+            // Осуществляем обновление данных
             museum.name = museumDetails.name;
             museum.location = museumDetails.location;
 

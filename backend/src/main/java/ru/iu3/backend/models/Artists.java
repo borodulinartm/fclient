@@ -1,15 +1,18 @@
 package ru.iu3.backend.models;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Entity
-@Table(name = "artists")
-@Access(AccessType.FIELD)
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Класс-модель, описывающая артистов
  * @author artem
  */
+@Entity
+@Table(name = "artists")
+@Access(AccessType.FIELD)
 public class Artists {
     // Поле ID (not null, auto increment)
     @Id
@@ -21,9 +24,15 @@ public class Artists {
     @Column(name = "name", nullable = false)
     public String name;
 
-    // Поле-внешний ключ countryID
-    @Column(name = "countryid")
-    public Long countryid;
+    // Поле, которое показывает отношение многие-к-одному
+    @ManyToOne
+    @JoinColumn(name = "countryid")
+    public Country countryid;
+
+    // Устанавливаем обратную связь: один ко многим от таблицы артистов в музее
+    @JsonIgnore
+    @OneToMany(mappedBy = "artistid")
+    public List<Painting> paintings = new ArrayList<Painting>();
 
     // Поле "Возраст"
     @Column(name = "age")
