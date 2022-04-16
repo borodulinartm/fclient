@@ -114,7 +114,7 @@ public class UsersController {
 
         if (uu.isPresent()) {
             Users u = uu.get();
-            for (Museum m: u.museums) {
+            for (Museum m: museums) {
                 u.removeMuseum(m);
                 ++cnt;
             }
