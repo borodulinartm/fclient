@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import NavigationBar from "./components/NavigationBarClass";
 import Home from "./components/Home";
 import Another_Home from "./components/Another_Home";
+import Login from "./components/Login";
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
                         <Route path="home" element={<Home />} />
                         {/* Дополнение: создал новый компонент, чтобы разделить то, что выводится с каждой из ссылок */}
                         <Route path="Another_Home" element={<Another_Home />} />
+                        <Route path="login" element={<Login/>} />
                     </Routes>
                 </div>
             </BrowserRouter>

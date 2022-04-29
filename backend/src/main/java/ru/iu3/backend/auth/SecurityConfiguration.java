@@ -62,7 +62,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        // Устнавливаем определённые политики доступа
+        // Устанавливаем определённые политики доступа
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).and().exceptionHandling().and().authenticationProvider(provider)
                 .addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter.class)
                 .authorizeRequests().requestMatchers(PROTECTED_URLS).authenticated().and().csrf().disable()
