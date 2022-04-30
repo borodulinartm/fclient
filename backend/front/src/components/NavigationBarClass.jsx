@@ -44,11 +44,6 @@ class NavigationBarClass extends React.Component {
 
                         {/* Переход может осуществляться так и при помощи функции*/}
                         <Nav.Link onClick={this.goHome}>Another Home</Nav.Link>
-
-                        {/* Переход снова в Yet Another Home*/}
-                        <Nav.Link onClick={() => {
-                            this.props.navigate("/home")
-                        }}>Yet Another Home</Nav.Link>
                     </Nav>
 
                     <Navbar.Text>{uname}</Navbar.Text>

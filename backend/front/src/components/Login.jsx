@@ -3,13 +3,17 @@ import BackendService from "../services/BackendService";
 import Utils from "../utils/Utils";
 import {useNavigate} from "react-router-dom";
 
+// Форма авторизации пользователя
 export default function Login() {
+    // Здесь используется хук useState - позволяет сохранять и изменять переменные состояния так, как если бы они
+    // были компонентами класса
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loggingIn, setLoggingIn] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error_message, setErrorMessage] = useState(null);
 
+    // Данный хук позволяет осуществлять навигацию между компонентами классов
     const nav = useNavigate();
 
     function handleChangeLogin(e) {
@@ -20,6 +24,7 @@ export default function Login() {
         setPassword(e.target.value);
     }
 
+    // Если всё обработано хорошо, то переходим на страницу /home
     function handleSubmit(e) {
         e.preventDefault();
         setSubmitted(true);
@@ -41,6 +46,7 @@ export default function Login() {
             })
     }
 
+    // В качестве возвращаемого значения можно использовать форму авторизации (то, что нам нужно)
     return (
         <div className="col-md-6 me-0">
             {error_message &&
