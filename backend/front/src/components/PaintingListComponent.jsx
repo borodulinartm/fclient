@@ -6,10 +6,10 @@ import BackendService from "../services/BackendService";
 import {useNavigate} from 'react-router-dom';
 import PaginationComponent from "./PaginationComponent";
 
-const CountryListComponent = props => {
+const PaintingListComponent = props => {
     const [message, setMessage] = useState();
-    const [countries, setCountries] = useState([]);
-    const [selectedCountries, setSelectedCountries] = useState([]);
+    const [paintings, setPaintings] = useState([]);
+    const [selectedArtists, setSelectedArtists] = useState([]);
     const [show_alert, setShowAlert] = useState(false);
     const [checkedItems, setCheckedItems] = useState([]);
     const [hidden, setHidden] = useState(false);
@@ -21,12 +21,12 @@ const CountryListComponent = props => {
     const limit = 2;
 
     const setChecked = v => {
-        setCheckedItems(Array(countries.length).fill(v));
+        setCheckedItems(Array(paintings.length).fill(v));
     }
 
     // Функция загрузки страницы
     const onPageChanged = cp => {
-        refreshCountries(cp - 1);
+        refreshPaintings(cp - 1);
     }
 
     const handleCheckChange = e => {
@@ -43,32 +43,32 @@ const CountryListComponent = props => {
         setChecked(isChecked);
     }
 
-    const deleteCountriesClicked = () => {
+    const deletePaintingClicked = () => {
         let x = [];
-        countries.map((t, idx) => {
+        paintings.map((t, idx) => {
             if (checkedItems[idx]) {
                 x.push(t)
             }
             return 0
         });
+
         if (x.length > 0) {
             var msg;
             if (x.length > 1) {
-                msg = "Пожалуйста подтвердите удаление " + x.length + " стран";
+                msg = "Пожалуйста подтвердите удаление " + x.length + " картин";
             } else {
-                msg = "Пожалуйста подтвердите удаление страны " + x[0].name;
+                msg = "Пожалуйста подтвердите удаление картины " + x[0].name;
             }
-
             setShowAlert(true);
-            setSelectedCountries(x);
+            setSelectedArtists(x);
             setMessage(msg);
         }
     }
 
-    const refreshCountries = cp => {
-        BackendService.retrieveAllCountries(cp, limit).then(
+    const refreshPaintings = cp => {
+        BackendService.retrieveAllPaintings(cp, limit).then(
             resp => {
-                setCountries(resp.data.content);
+                setPaintings(resp.data.content);
                 setHidden(false);
                 setTotalCount(resp.data.totalElements);
                 setPage(cp);
@@ -77,19 +77,24 @@ const CountryListComponent = props => {
             setHidden(true);
             setTotalCount(0);
         }).finally(() => setChecked(false))
+
+        //console.log(paintings)
     }
 
     useEffect(() => {
-        refreshCountries();
+        refreshPaintings();
     }, [])
 
-    const updateCountryClicked = id => {
-        navigate(`/countries/${id}`)
+    const updatePaintingClicked = id => {
+        console.log(id)
+        navigate(`/paintings/${id}`)
     }
 
     const onDelete = () => {
-        BackendService.deleteCountries(selectedCountries)
-            .then(() => refreshCountries())
+        BackendService.deletePaintings(selectedArtists)
+            .then(() => {
+                refreshPaintings()
+            })
             .catch(() => {
             })
     }
@@ -98,8 +103,8 @@ const CountryListComponent = props => {
         setShowAlert(false)
     }
 
-    const addCountryClicked = () => {
-        navigate(`/countries/-1`)
+    const addPainting = () => {
+        navigate(`/paintings/-1`)
     }
 
     if (hidden) {
@@ -109,17 +114,17 @@ const CountryListComponent = props => {
     return (
         <div className="m-4">
             <div className="row my-2">
-                <h3>Страны</h3>
+                <h3>Картины</h3>
                 <div className="btn-toolbar">
                     <div className="btn-group ms-auto">
                         <button className="btn btn-outline-secondary"
-                                onClick={addCountryClicked}>
+                                onClick={addPainting}>
                             <FontAwesomeIcon icon={faPlus}/>{' '}Добавить
                         </button>
                     </div>
                     <div className="btn-group ms-2">
                         <button className="btn btn-outline-secondary"
-                                onClick={deleteCountriesClicked}>
+                                onClick={deletePaintingClicked}>
                             <FontAwesomeIcon icon={faTrash}/>{' '}Удалить
                         </button>
                     </div>
@@ -136,6 +141,9 @@ const CountryListComponent = props => {
                     <thead className="thead-light">
                     <tr>
                         <th>Название</th>
+                        <th>Музей</th>
+                        <th>Художник</th>
+                        <th>Год</th>
                         <th>
                             <div className="btn-toolbar pb-1">
                                 <div className="btn-group ms-auto">
@@ -147,15 +155,18 @@ const CountryListComponent = props => {
                     </thead>
 
                     <tbody> {
-                        countries && countries.map((country, index) =>
-                            <tr key={country.id}>
-                                <td>{country.name}</td>
+                        paintings && paintings.map((painting, index) =>
+                            <tr key={painting.id}>
+                                <td>{painting.name}</td>
+                                <td>{painting.museumid.name}</td>
+                                <td>{painting.artistid.name}</td>
+                                <td>{painting.year}</td>
                                 <td>
                                     <div className="btn-toolbar">
                                         <div className="btn-group ms-auto">
                                             <button className="btn btn-outline-secondary btn-sm btn-toolbar"
                                                     onClick={() =>
-                                                        updateCountryClicked(country.id)}>
+                                                        updatePaintingClicked(painting.id)}>
                                                 <FontAwesomeIcon icon={faEdit} fixedWidth/>
                                             </button>
                                         </div>
@@ -184,4 +195,4 @@ const CountryListComponent = props => {
     )
 }
 
-export default CountryListComponent;
+export default PaintingListComponent;

@@ -1,8 +1,12 @@
 package ru.iu3.backend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -10,6 +14,8 @@ import ru.iu3.backend.models.Museum;
 import ru.iu3.backend.models.Users;
 import ru.iu3.backend.repositories.MuseumRepository;
 import ru.iu3.backend.repositories.UsersRepository;
+import ru.iu3.backend.tools.DataValidationException;
+import ru.iu3.backend.tools.Utils;
 
 import java.util.*;
 
@@ -33,8 +39,17 @@ public class UsersController {
      * @return - список пользователей в виде JSON
      */
     @GetMapping("/users")
-    public List getAllUsers() {
-        return usersRepository.findAll();
+    public Page<Users> getAllUsers(@RequestParam("page") int page, @RequestParam("limit") int limit) {
+        return usersRepository.findAll(PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "login")));
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<Users> getUser(@PathVariable(value = "id") Long userID)
+        throws DataValidationException {
+        Users user = usersRepository.findById(userID).
+                orElseThrow(() -> new DataValidationException("User not founding"));
+
+        return ResponseEntity.ok(user);
     }
 
     /**
@@ -44,7 +59,7 @@ public class UsersController {
      * @throws Exception - обязательное требование
      */
     @PostMapping("/users")
-    public ResponseEntity<Object> createUsers(@RequestBody Users users) throws Exception {
+    public ResponseEntity<Object> createUsers(@RequestBody Users users) throws DataValidationException {
         try {
             Users nc = usersRepository.save(users);
             return new ResponseEntity<Object>(nc, HttpStatus.OK);
@@ -52,15 +67,10 @@ public class UsersController {
             // Указываем тип ошибки
             String error;
             if (exception.getMessage().contains("ConstraintViolationException")) {
-                error = "artistAlreadyExists";
+                throw new DataValidationException("Этот пользователь есть в БД");
             } else {
-                error = exception.getMessage();
+                throw new DataValidationException("Неизвестная ошибка");
             }
-
-            Map<String, String> map = new HashMap<>();
-            map.put("error", error + "\n");
-
-            return ResponseEntity.ok(map);
         }
     }
 
@@ -138,20 +148,42 @@ public class UsersController {
      */
     @PutMapping("/users/{id}")
     public ResponseEntity<Users> updateUsers(@PathVariable(value = "id") Long userId,
-                                               @RequestBody Users userDetails) {
-        Users user = null;
-        Optional<Users> uu = usersRepository.findById(userId);
-        if (uu.isPresent()) {
+                                               @RequestBody Users userDetails) throws DataValidationException {
+        try {
+            Users user = usersRepository.findById(userId)
+                    .orElseThrow(() -> new DataValidationException("Пользователь с таким индексом не найден"));
+
             // Заполняем пользовательские данные
-            user = uu.get();
             user.login = userDetails.login;
             user.email = userDetails.email;
 
+            String np = userDetails.np;
+            System.out.println("Новый пароль (если вдруг забудешь): " + np);
+            if (np != null && !np.isEmpty()) {
+                byte[] b = new byte[32];
+                new Random().nextBytes(b);
+                String salt = new String(Hex.encode(b));
+                user.password = Utils.ComputeHash(np, salt);
+                user.salt = salt;
+            }
+
             usersRepository.save(user);
             return ResponseEntity.ok(user);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found");
+        } catch (Exception exception) {
+            if (exception.getMessage().contains("ConstraintViolationException")) {
+                throw new DataValidationException("Этот пользователь уже есть в базе");
+                //throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Эта страна уже есть в базе");
+            } else {
+                //throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Неизвестная ошибка");
+                throw new DataValidationException("Неизвестная ошибка");
+            }
         }
+    }
+
+    @PostMapping("/deleteusers")
+    public ResponseEntity deleteUsers(@Validated @RequestBody List<Users> users) {
+        usersRepository.deleteAll(users);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**
